@@ -101,18 +101,9 @@ void main() {
       });
 
       test('parses connectionType case-insensitive', () {
-        expect(
-          Printer.fromJson({'connectionType': 'ble'}).connectionType,
-          ConnectionType.BLE,
-        );
-        expect(
-          Printer.fromJson({'connectionType': 'Usb'}).connectionType,
-          ConnectionType.USB,
-        );
-        expect(
-          Printer.fromJson({'connectionType': 'network'}).connectionType,
-          ConnectionType.NETWORK,
-        );
+        expect(Printer.fromJson({'connectionType': 'ble'}).connectionType, ConnectionType.BLE);
+        expect(Printer.fromJson({'connectionType': 'Usb'}).connectionType, ConnectionType.USB);
+        expect(Printer.fromJson({'connectionType': 'network'}).connectionType, ConnectionType.NETWORK);
       });
 
       test('handles vendorId as int', () {
@@ -201,23 +192,16 @@ void main() {
 
       test('updates single field', () {
         final original = Printer(name: 'Original');
-        final copy = original.copyWith(name: 'Updated');
+        final copy = original.copyAndSet(name: 'Updated');
 
         expect(copy.name, 'Updated');
         expect(original.name, 'Original');
       });
 
       test('updates multiple fields', () {
-        final original = Printer(
-          name: 'Original',
-          isConnected: false,
-        );
+        final original = Printer(name: 'Original', isConnected: false);
 
-        final copy = original.copyWith(
-          name: 'Updated',
-          isConnected: true,
-          connectionType: ConnectionType.USB,
-        );
+        final copy = original.copyAndSet(name: 'Updated', isConnected: true, connectionType: ConnectionType.USB);
 
         expect(copy.name, 'Updated');
         expect(copy.isConnected, true);
@@ -225,13 +209,9 @@ void main() {
       });
 
       test('preserves unspecified fields', () {
-        final original = Printer(
-          address: 'addr',
-          name: 'name',
-          vendorId: 'vendor',
-        );
+        final original = Printer(address: 'addr', name: 'name', vendorId: 'vendor');
 
-        final copy = original.copyWith(name: 'new name');
+        final copy = original.copyAndSet(name: 'new name');
 
         expect(copy.address, 'addr');
         expect(copy.vendorId, 'vendor');
@@ -284,61 +264,23 @@ void main() {
 
     group('hasValidConnectionData', () {
       test('USB requires vendorId and productId', () {
-        expect(
-          Printer(
-            connectionType: ConnectionType.USB,
-            vendorId: 'v',
-            productId: 'p',
-          ).hasValidConnectionData,
-          true,
-        );
+        expect(Printer(connectionType: ConnectionType.USB, vendorId: 'v', productId: 'p').hasValidConnectionData, true);
 
-        expect(
-          Printer(
-            connectionType: ConnectionType.USB,
-            vendorId: 'v',
-          ).hasValidConnectionData,
-          false,
-        );
+        expect(Printer(connectionType: ConnectionType.USB, vendorId: 'v').hasValidConnectionData, false);
 
-        expect(
-          Printer(
-            connectionType: ConnectionType.USB,
-            productId: 'p',
-          ).hasValidConnectionData,
-          false,
-        );
+        expect(Printer(connectionType: ConnectionType.USB, productId: 'p').hasValidConnectionData, false);
       });
 
       test('BLE requires address', () {
-        expect(
-          Printer(
-            connectionType: ConnectionType.BLE,
-            address: 'addr',
-          ).hasValidConnectionData,
-          true,
-        );
+        expect(Printer(connectionType: ConnectionType.BLE, address: 'addr').hasValidConnectionData, true);
 
-        expect(
-          Printer(connectionType: ConnectionType.BLE).hasValidConnectionData,
-          false,
-        );
+        expect(Printer(connectionType: ConnectionType.BLE).hasValidConnectionData, false);
       });
 
       test('NETWORK requires address', () {
-        expect(
-          Printer(
-            connectionType: ConnectionType.NETWORK,
-            address: '192.168.1.1',
-          ).hasValidConnectionData,
-          true,
-        );
+        expect(Printer(connectionType: ConnectionType.NETWORK, address: '192.168.1.1').hasValidConnectionData, true);
 
-        expect(
-          Printer(connectionType: ConnectionType.NETWORK)
-              .hasValidConnectionData,
-          false,
-        );
+        expect(Printer(connectionType: ConnectionType.NETWORK).hasValidConnectionData, false);
       });
 
       test('returns false for null connectionType', () {
@@ -349,12 +291,7 @@ void main() {
 
     group('toString', () {
       test('includes all relevant fields', () {
-        final printer = Printer(
-          name: 'Test',
-          connectionType: ConnectionType.BLE,
-          address: 'addr',
-          isConnected: true,
-        );
+        final printer = Printer(name: 'Test', connectionType: ConnectionType.BLE, address: 'addr', isConnected: true);
 
         final str = printer.toString();
 
@@ -478,10 +415,7 @@ void main() {
     });
 
     test('handles numeric strings', () {
-      final printer = Printer(
-        vendorId: '12345',
-        productId: '67890',
-      );
+      final printer = Printer(vendorId: '12345', productId: '67890');
 
       final json = printer.toJson();
       expect(json['vendorId'], '12345');
@@ -542,7 +476,7 @@ void main() {
         manufacturerDataList: manufacturerDataList,
       );
 
-      final copy = original.copyWith(isConnected: true);
+      final copy = original.copyAndSet(isConnected: true);
 
       expect(copy.isConnected, true);
       expect(copy.services, original.services);
@@ -551,14 +485,9 @@ void main() {
     });
 
     test('copyWith can override advertisement data', () {
-      final original = Printer(
-        address: 'addr',
-        services: const ['000018f0-0000-1000-8000-00805f9b34fb'],
-      );
+      final original = Printer(address: 'addr', services: const ['000018f0-0000-1000-8000-00805f9b34fb']);
 
-      final copy = original.copyWith(
-        services: const ['0000180d-0000-1000-8000-00805f9b34fb'],
-      );
+      final copy = original.copyAndSet(services: const ['0000180d-0000-1000-8000-00805f9b34fb']);
 
       expect(copy.services, ['0000180d-0000-1000-8000-00805f9b34fb']);
     });
@@ -580,10 +509,7 @@ void main() {
           isConnected: true,
         );
 
-        final merged = Printer.mergeAdvertisementData(
-          previous: scanned,
-          incoming: systemRecord,
-        );
+        final merged = Printer.mergeAdvertisementData(previous: scanned, incoming: systemRecord);
 
         expect(merged.isConnected, true);
         expect(merged.services, scanned.services);
@@ -592,19 +518,10 @@ void main() {
       });
 
       test('keeps incoming data when incoming carries some', () {
-        final previous = Printer(
-          address: 'addr',
-          services: const ['0000180d-0000-1000-8000-00805f9b34fb'],
-        );
-        final incoming = Printer(
-          address: 'addr',
-          services: const ['000018f0-0000-1000-8000-00805f9b34fb'],
-        );
+        final previous = Printer(address: 'addr', services: const ['0000180d-0000-1000-8000-00805f9b34fb']);
+        final incoming = Printer(address: 'addr', services: const ['000018f0-0000-1000-8000-00805f9b34fb']);
 
-        final merged = Printer.mergeAdvertisementData(
-          previous: previous,
-          incoming: incoming,
-        );
+        final merged = Printer.mergeAdvertisementData(previous: previous, incoming: incoming);
 
         expect(merged.services, ['000018f0-0000-1000-8000-00805f9b34fb']);
       });
@@ -615,15 +532,9 @@ void main() {
           services: const ['000018f0-0000-1000-8000-00805f9b34fb'],
           serviceData: serviceData,
         );
-        final incoming = Printer(
-          address: 'addr',
-          services: const ['000018f0-0000-1000-8000-00805f9b34fb'],
-        );
+        final incoming = Printer(address: 'addr', services: const ['000018f0-0000-1000-8000-00805f9b34fb']);
 
-        final merged = Printer.mergeAdvertisementData(
-          previous: previous,
-          incoming: incoming,
-        );
+        final merged = Printer.mergeAdvertisementData(previous: previous, incoming: incoming);
 
         expect(merged.serviceData, isEmpty);
       });
@@ -632,16 +543,7 @@ void main() {
         final incoming = Printer(address: 'addr');
         final previous = Printer(address: 'addr');
 
-        expect(
-          identical(
-            Printer.mergeAdvertisementData(
-              previous: previous,
-              incoming: incoming,
-            ),
-            incoming,
-          ),
-          true,
-        );
+        expect(identical(Printer.mergeAdvertisementData(previous: previous, incoming: incoming), incoming), true);
       });
 
       test('inheriting keeps the incoming connection state, not previous', () {
@@ -653,16 +555,9 @@ void main() {
           isConnected: false,
           services: const ['000018f0-0000-1000-8000-00805f9b34fb'],
         );
-        final incoming = Printer(
-          address: 'addr',
-          name: 'new name',
-          isConnected: true,
-        );
+        final incoming = Printer(address: 'addr', name: 'new name', isConnected: true);
 
-        final merged = Printer.mergeAdvertisementData(
-          previous: previous,
-          incoming: incoming,
-        );
+        final merged = Printer.mergeAdvertisementData(previous: previous, incoming: incoming);
 
         expect(merged.name, 'new name');
         expect(merged.isConnected, true);

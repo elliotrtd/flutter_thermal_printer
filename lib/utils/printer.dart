@@ -113,35 +113,38 @@ class Printer extends BleDevice {
     }
   }
 
+  Printer copyAndSet({bool? isConnected, String? name, ConnectionType? connectionType, List<String>? services}) =>
+      Printer(
+        address: address,
+        name: name ?? this.name,
+        connectionType: connectionType ?? this.connectionType,
+        isConnected: isConnected ?? this.isConnected,
+        vendorId: vendorId,
+        productId: productId,
+        deviceUri: deviceUri,
+        queueName: queueName,
+        services: services ?? this.services,
+        serviceData: serviceData,
+        manufacturerDataList: manufacturerDataList,
+      );
+
   /// Create a copy with updated fields
   ///
   /// Advertisement data ([services], [serviceData], [manufacturerDataList]) is
   /// carried over unless explicitly overridden, so connection-state updates do
   /// not discard what the scan reported.
-  Printer copyWith({
-    String? address,
-    String? name,
-    ConnectionType? connectionType,
-    bool? isConnected,
-    String? vendorId,
-    String? productId,
-    String? deviceUri,
-    String? queueName,
-    List<String>? services,
-    Map<String, Uint8List>? serviceData,
-    List<ManufacturerData>? manufacturerDataList,
-  }) => Printer(
-    address: address ?? this.address,
-    name: name ?? this.name,
-    connectionType: connectionType ?? this.connectionType,
-    isConnected: isConnected ?? this.isConnected,
-    vendorId: vendorId ?? this.vendorId,
-    productId: productId ?? this.productId,
-    deviceUri: deviceUri ?? this.deviceUri,
-    queueName: queueName ?? this.queueName,
-    services: services ?? this.services,
-    serviceData: serviceData ?? this.serviceData,
-    manufacturerDataList: manufacturerDataList ?? this.manufacturerDataList,
+  Printer copyWith({String? deviceId}) => Printer(
+    address: address,
+    name: name,
+    connectionType: connectionType,
+    isConnected: isConnected,
+    vendorId: vendorId,
+    productId: productId,
+    deviceUri: deviceUri,
+    queueName: queueName,
+    services: services,
+    serviceData: serviceData,
+    manufacturerDataList: manufacturerDataList,
   );
 
   /// Carry [previous]'s advertisement data over to [incoming] when [incoming]
@@ -159,31 +162,20 @@ class Printer extends BleDevice {
   /// Named parameters rather than a receiver and an argument: the two are
   /// interchangeable at the call site and getting the order backwards would
   /// silently discard every fresh `isConnected` or `name` update.
-  static Printer mergeAdvertisementData({
-    required Printer previous,
-    required Printer incoming,
-  }) {
+  static Printer mergeAdvertisementData({required Printer previous, required Printer incoming}) {
     final hasOwnData =
-        incoming.services.isNotEmpty ||
-        incoming.serviceData.isNotEmpty ||
-        incoming.manufacturerDataList.isNotEmpty;
+        incoming.services.isNotEmpty || incoming.serviceData.isNotEmpty || incoming.manufacturerDataList.isNotEmpty;
     if (hasOwnData) {
       return incoming;
     }
 
     final hasInheritable =
-        previous.services.isNotEmpty ||
-        previous.serviceData.isNotEmpty ||
-        previous.manufacturerDataList.isNotEmpty;
+        previous.services.isNotEmpty || previous.serviceData.isNotEmpty || previous.manufacturerDataList.isNotEmpty;
     if (!hasInheritable) {
       return incoming;
     }
 
-    return incoming.copyWith(
-      services: previous.services,
-      serviceData: previous.serviceData,
-      manufacturerDataList: previous.manufacturerDataList,
-    );
+    return incoming.copyWith(deviceId: previous.deviceId);
   }
 
   /// Generate unique identifier for the printer
